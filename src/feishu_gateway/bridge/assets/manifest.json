@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "name": "feishu-session-bridge",
+  "version": "0.1.6",
+  "plugin": "plugin.mjs",
+  "sha256": "93c52206caab7dde5f2f35dc7f27427a3c76a5ee9b0525a2966def81cd46ecae",
+  "tested_with_dsh": "0.2.2-rc.2",
+  "profile": "web",
+  "methods": [
+    "list",
+    "state",
+    "prompt",
+    "wait",
+    "events"
+  ],
+  "provenance": {
+    "source": "adopted from a running DSH bridge",
+    "adopted_at": "2026-11-14",
+    "note": "No absolute host paths or credentials are embedded in the asset."
+  },
+  "adoption": {
+    "existing_unmanaged": "preserve token and workspace scope; back up plugin and profile patch; replace plugin with this asset; adopt the feishuGatewayBridge profile entry.",
+    "token": "keep existing bridge-token unless rotation is explicitly requested.",
+    "scope": "keep existing bridge-workspaces.json unless the caller supplies an explicit initial scope."
+  }
+}

@@ -1,0 +1,37 @@
+.env
+.venv/
+__pycache__/
+.gateway-preview.json
+/.gateway-execution.sqlite3*
+/.gateway-supervisor.sqlite3*
+/.gateway-supervisor-memory.sqlite3*
+/.gateway-completion.json
+/.gateway-ssh.json
+/.gateway-dsh.json
+/.gateway-listener.lock
+/.gateway-workspaces.json
+/.gateway-workspaces.lock
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+.DS_Store
+*.pyc
+.coverage
+htmlcov/
+*.log
+.mypy_cache/
+.ruff_cache/
+.idea/
+.vscode/
+/.gateway-daemon.sock
+/.gateway-daemon.lock
+/.gateway-daemon.pid
+/.gateway-daemon.log
+
+# Partitioned runtime data (databases, backups, sockets)
+/data/
+
+# Partitioned config and logs
+/config/
+/logs/
