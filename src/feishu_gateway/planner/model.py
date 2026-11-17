@@ -159,7 +159,7 @@ class DeepSeekBackend:
 
     def __init__(
         self, api_key: str, model: str, base_url: str, *,
-        max_tokens: int = 2048, client: httpx.AsyncClient | None = None,
+        max_tokens: int = 4096, client: httpx.AsyncClient | None = None,
         thinking: str = "disabled",
     ) -> None:
         if not api_key.strip():
@@ -383,7 +383,7 @@ class RouterSettings:
     max_concurrency: int = 4
     breaker_threshold: int = 3
     breaker_cooldown_seconds: float = 60.0
-    max_tokens: int = 2048
+    max_tokens: int = 4096
 
 
 def _text(values: Mapping[str, object], name: str, default: str = "") -> str:
@@ -480,7 +480,7 @@ class StructuredModel:
             breaker_cooldown_seconds=_positive_float(
                 values, "GATEWAY_ROUTER_BREAKER_COOLDOWN_SECONDS", 60.0,
             ),
-            max_tokens=_positive_int(values, "GATEWAY_ROUTER_MAX_TOKENS", 2048),
+            max_tokens=_positive_int(values, "GATEWAY_ROUTER_MAX_TOKENS", 4096),
         )
         return cls(settings_object, codex_command=codex_command, client=client)
 
