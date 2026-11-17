@@ -13,7 +13,7 @@ from uuid import NAMESPACE_URL, uuid5
 from lark_oapi import LogLevel
 from lark_oapi.channel import (
     Events, FeishuChannel, FeishuChannelError, InboundConfig, InboundMessage, OutboundCard,
-    PolicyConfig, SafetyConfig, SendOpts, TextBatchConfig, TextContent,
+    PolicyConfig, PostContent, SafetyConfig, SendOpts, TextBatchConfig, TextContent,
 )
 
 from feishu_gateway.config import valid_id
@@ -167,7 +167,7 @@ class FeishuEdge:
     def _original_group_text(self, message: InboundMessage) -> str | None:
         if (
             message.sender.is_bot
-            or not isinstance(message.content, TextContent)
+            or not isinstance(message.content, (TextContent, PostContent))
             or message.chat_type not in {"group", "p2p"}
             or not message.message_id
             or not valid_id(message.chat_id, "oc_")
@@ -175,7 +175,12 @@ class FeishuEdge:
         ):
             return None
         identity = self._channel.bot_identity
-        raw = message.content.raw.get("text")
+        if isinstance(message.content, TextContent):
+            raw = message.content.raw.get("text")
+        else:
+            # Feishu sends a post for formatted multi-line messages. The
+            # channel's normalized text is the Markdown/plain rendering.
+            raw = message.content.text or getattr(message, "content_text", "")
         if not identity or not identity.open_id or not isinstance(raw, str):
             return None
         if message.chat_type == "p2p":
