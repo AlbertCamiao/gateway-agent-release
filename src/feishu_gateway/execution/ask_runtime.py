@@ -55,7 +55,7 @@ class IntentPlanner:
     therefore cannot be delayed by a slow SSH/Codex/DSH inventory scan.
     """
 
-    def __init__(self, router, *, timeout: float = 25.0) -> None:
+    def __init__(self, router, *, timeout: float = 60.0) -> None:
         self._router = router
         self._timeout = timeout
 
@@ -109,6 +109,7 @@ class IntentPlanner:
             )
         except Exception as error:
             code = "intent_timeout" if getattr(error, "code", "") == "router_timeout" else "intent_unavailable"
+            LOGGER.warning("intent planner failed: %s", code)
             raise AskPlanningError(code, "意图识别阶段暂时不可用，请稍后重试。") from None
         if not isinstance(result, Mapping) or result.get("name") not in OPERATION_NAMES:
             raise AskPlanningError("invalid_operation", "模型未返回有效的 Gateway 操作。")
@@ -126,7 +127,7 @@ class IntentPlanner:
 class TargetSelector:
     """Stage B: choose one real candidate for an already selected operation."""
 
-    def __init__(self, router, *, timeout: float = 20.0) -> None:
+    def __init__(self, router, *, timeout: float = 30.0) -> None:
         self._router = router
         self._timeout = timeout
 
@@ -168,6 +169,7 @@ class TargetSelector:
             )
         except Exception as error:
             code = "target_timeout" if getattr(error, "code", "") == "router_timeout" else "target_unavailable"
+            LOGGER.warning("target planner failed: %s", code)
             raise AskPlanningError(code, "目标会话选择阶段暂时不可用，请稍后重试。") from None
         key = result.get("candidate_key") if isinstance(result, Mapping) else None
         if not isinstance(key, str) or not key:
@@ -181,7 +183,7 @@ class AskPlanner:
     TARGET_OPERATIONS = frozenset({"task.prompt", "session.status"})
 
     def __init__(
-        self, router, *, timeout: float = 30.0, target_timeout: float = 20.0,
+        self, router, *, timeout: float = 60.0, target_timeout: float = 30.0,
         catalog: Callable[[], Awaitable[Sequence[Mapping[str, Any]]]] | None = None,
     ) -> None:
         self._router = router
@@ -437,6 +439,7 @@ class AskRuntime:
             else:
                 planned = await self._planner(text.strip())
         except AskPlanningError as error:
+            LOGGER.warning("ask planning rejected: %s", error.code)
             return OperationResult.failure(error.code, str(error))
         except Exception:
             LOGGER.exception("ask planner failed")
