@@ -182,12 +182,23 @@ def _observation_note(data: dict) -> str:
     )
 
 
+def _target_session(data: dict) -> str:
+    target = data.get("target") if isinstance(data.get("target"), dict) else data
+    host = target.get("host")
+    runtime = target.get("runtime")
+    session = target.get("session_id")
+    if not all(isinstance(value, str) and value for value in (host, runtime, session)):
+        return ""
+    return f"**指定会话**：`{host} / {runtime} / {session}`"
+
+
 def render_brief(result: dict) -> str:
     receipt = _unwrap(result)
     if receipt.error is not None:
         return "### 任务简报\n\n" + _error(receipt.error, receipt.data)
     data = receipt.data
-    parts = ["### 任务简报", _task_fields(data)]
+    target = _target_session(data)
+    parts = ["### 任务简报"] + ([target] if target else []) + [_task_fields(data)]
     note = _observation_note(data)
     if note:
         parts.append(note)

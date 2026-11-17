@@ -6,7 +6,15 @@ from feishu_gateway.contracts import ExecutionBrief
 
 
 def format_execution_brief(brief: ExecutionBrief) -> str:
-    lines = ["**任务简报**", "", f"- 状态：{brief.state}"]
+    target = brief.target
+    session = f"{target.host} / {target.runtime} / {target.session_id}"
+    lines = [
+        "**指定会话**：`" + session + "`",
+        "",
+        "**任务简报**",
+        "",
+        f"- 状态：{brief.state}",
+    ]
     if brief.outcome:
         lines.append(f"- 结果：{brief.outcome}")
     for label, values in (
