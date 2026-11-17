@@ -111,6 +111,7 @@ class ExecutionBrief:
     verification: tuple[str, ...] = ()
     blockers: tuple[str, ...] = ()
     next_steps: tuple[str, ...] = ()
+    target_title: str | None = None
 
 
 @dataclass(frozen=True, slots=True)

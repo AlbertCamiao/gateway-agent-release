@@ -184,12 +184,10 @@ def _observation_note(data: dict) -> str:
 
 def _target_session(data: dict) -> str:
     target = data.get("target") if isinstance(data.get("target"), dict) else data
-    host = target.get("host")
-    runtime = target.get("runtime")
-    session = target.get("session_id")
-    if not all(isinstance(value, str) and value for value in (host, runtime, session)):
-        return ""
-    return f"**指定会话**：`{host} / {runtime} / {session}`"
+    title = data.get("target_title") or target.get("title")
+    if not isinstance(title, str) or not title.strip() or not title.isprintable():
+        title = "未命名会话"
+    return f"**指定会话**：{title.strip()}"
 
 
 def render_brief(result: dict) -> str:

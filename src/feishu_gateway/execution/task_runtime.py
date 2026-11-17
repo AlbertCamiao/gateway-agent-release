@@ -6,7 +6,7 @@ import asyncio
 import hashlib
 import logging
 import time
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from pathlib import PurePosixPath
 from typing import Any, Awaitable, Callable, Mapping
 from uuid import uuid4
@@ -478,6 +478,9 @@ class TaskRuntime:
                 outcome=(output.strip().splitlines()[0][:500] if output.strip() else evidence.state),
                 blockers=(evidence.error,) if evidence.error else (),
             )
+        title = await self._target_title(evidence.target)
+        if title is not None:
+            brief = replace(brief, target_title=title)
         if not terminal:
             await self._transition(
                 evidence.task_id, evidence.state, origin=origin,
@@ -534,6 +537,7 @@ class TaskRuntime:
             tuple(raw.get("key_actions") or ()), tuple(raw.get("artifacts") or ()),
             tuple(raw.get("verification") or ()), tuple(raw.get("blockers") or ()),
             tuple(raw.get("next_steps") or ()),
+            target_title=(raw.get("target_title") if isinstance(raw.get("target_title"), str) else None),
         )
         delivery_raw = payload.get("delivery") if isinstance(payload.get("delivery"), Mapping) else None
         delivery = None
@@ -758,6 +762,16 @@ class TaskRuntime:
             host, PurePosixPath(workspace) if workspace is not None else None, registry=registry,
         )
         return next((row for row in rows if row.get("session_id") == session), None)
+
+    async def _target_title(self, target: SessionRef) -> str | None:
+        try:
+            row = await self._lookup(target.host, None, target.session_id)
+        except Exception:
+            return None
+        title = (row or {}).get("title")
+        if isinstance(title, str) and title.strip() and title.isprintable():
+            return title.strip()
+        return None
 
     def set_completion_sink(self, sink) -> None:
         self._completion_sink = sink
@@ -1333,6 +1347,9 @@ class TaskRuntime:
             except Exception:
                 LOGGER.warning("task brief LLM summarization failed")
                 source = "fallback"
+        title = await self._target_title(target)
+        if title is not None:
+            brief = replace(brief, target_title=title)
         data = asdict(brief)
         data["brief_source"] = source
         data["output"] = output

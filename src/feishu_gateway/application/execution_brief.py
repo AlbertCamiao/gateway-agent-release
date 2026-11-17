@@ -6,10 +6,9 @@ from feishu_gateway.contracts import ExecutionBrief
 
 
 def format_execution_brief(brief: ExecutionBrief) -> str:
-    target = brief.target
-    session = f"{target.host} / {target.runtime} / {target.session_id}"
+    title = brief.target_title if brief.target_title else "未命名会话"
     lines = [
-        "**指定会话**：`" + session + "`",
+        "**指定会话**：" + title,
         "",
         "**任务简报**",
         "",
