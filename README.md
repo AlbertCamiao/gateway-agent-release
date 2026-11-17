@@ -223,6 +223,29 @@ OperationDispatcher
         Codex owner IPC / DSH bridge / SSH
 ```
 
+### Natural-language planning stages
+
+The planner is intentionally split so a long request does not have to perform
+intent detection, target selection, and prompt formatting in one model call:
+
+```text
+Stage A: IntentPlanner
+  request + operation catalog + focus
+  → operation + task body
+
+Stage B: TargetSelector
+  request + already-chosen operation + authorized candidates + focus
+  → exactly one candidate
+
+Stage C: PromptFormatter
+  chosen target + full task body + template
+  → promptMarkdown
+```
+
+Stage A never loads the session catalog, so a list/management request does not
+pay for an SSH/Codex/DSH inventory scan. Stage B loads the catalog only when an
+operation needs a target. Stage C has its own independent timeout.
+
 ### Completion Path
 
 ```text

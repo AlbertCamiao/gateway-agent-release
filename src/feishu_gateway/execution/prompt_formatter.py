@@ -14,7 +14,7 @@ from feishu_gateway.contracts import PortError
 class PromptFormatter:
     def __init__(
         self, *, router: StructuredModel, template: Callable[[], str],
-        timeout: float = 20.0,
+        timeout: float = 60.0,
     ) -> None:
         self._router = router
         self._template = template
