@@ -118,7 +118,9 @@ def _apply_locked(action, host, path, target, scopes, homes, *, registry_path, s
         scope_update_attempted = bridge is not None
         update_dsh_roots(bridge, expanded)
         status = asyncio.run(scan(host, path, registry=next_scopes))
-        if status == 0 and not registered:
+        # A missing optional catalog (for example Codex on a DSH-only host)
+        # must not prevent the user from authorizing a verified workspace.
+        if status in {0, 2} and not registered:
             if recheck is not None:
                 recheck()
             write_registry(next_scopes, {**homes, host: home}, registry_path)

@@ -70,12 +70,33 @@ def _workspace_scopes(
                 catalog_only_roots=(), writable_sessions={}, workspace_roots=())
         for scope in ssh_scopes
     )
-    dsh = tuple(
-        replace(transport, project_root=None, session_id=None,
-                workspaces=tuple(DSHWorkspace(path) for path in registry[transport.host]))
-        for transport in dsh_transports if registry.get(transport.host)
-    )
-    return local, ssh, dsh
+    configured = {transport.host: transport for transport in dsh_transports}
+    dsh = []
+    for scope in ssh_scopes:
+        host = scope.transport.host
+        workspaces = registry.get(host, ())
+        if not workspaces:
+            continue
+        transport = configured.get(host)
+        if transport is None:
+            # The bridge is installed at the conventional remote path. Do not
+            # require a hand-written bridge_dir entry when the SSH host and
+            # workspace are already authorized.
+            home = scope.project_roots[0] if scope.project_roots else None
+            if home is None:
+                continue
+            transport = DSHReadTransport(
+                ssh=scope.transport,
+                remote_dir=home / ".dsh" / "gateway-bridge",
+                profile="web",
+                host=host,
+                workspaces=tuple(DSHWorkspace(path) for path in workspaces),
+            )
+        dsh.append(replace(
+            transport, project_root=None, session_id=None,
+            workspaces=tuple(DSHWorkspace(path) for path in workspaces),
+        ))
+    return local, ssh, tuple(dsh)
 
 
 def _registered_snapshot(
