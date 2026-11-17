@@ -199,13 +199,26 @@ class SSHReadTransport:
         command.extend(("--", self.ssh_alias or self.host, remote_command))
         return command
 
+    def _launcher(self) -> str:
+        if self.remote_codex != "codex":
+            return f"exec {shlex.quote(self.remote_codex)}"
+        # Non-interactive SSH often lacks ~/.local/bin in PATH. Resolve the
+        # conventional Codex install locations in the remote login shell
+        # instead of requiring a host-specific absolute path in config.
+        return (
+            'if [ -x "$HOME/.local/bin/codex" ]; then CODEX="$HOME/.local/bin/codex"; '
+            'elif [ -x "$HOME/bin/codex" ]; then CODEX="$HOME/bin/codex"; '
+            'elif command -v codex >/dev/null 2>&1; then CODEX="$(command -v codex)"; '
+            'else CODEX=codex; fi; exec "$CODEX"'
+        )
+
     def _command(self) -> list[str]:
         if self.app_server_socket is not None:
             socket = shlex.quote(str(self.app_server_socket))
             return self._ssh_command(
-                f"exec {shlex.quote(self.remote_codex)} app-server proxy --sock {socket}"
+                f"{self._launcher()} app-server proxy --sock {socket}"
             )
-        return self._ssh_command(f"exec {shlex.quote(self.remote_codex)} app-server --listen stdio://")
+        return self._ssh_command(f"{self._launcher()} app-server --listen stdio://")
 
     def _check_control_path(self) -> None:
         if self.control_path is None:

@@ -4,6 +4,16 @@ import re
 from html import escape
 
 
+def _value(text):
+    return re.sub(r'([\\`*_\[\]~|])', r'\\\1', escape(text, quote=False))
+
+
+def _restart_sentence(state):
+    if state == 'manual':
+        return 'Gateway 正在手动运行；请重启 Gateway 后生效。'
+    return 'Gateway 未运行；配置将在下次启动时生效。'
+
+
 def format_host_add(result, restart_state):
     candidate = result['candidate']
     content = [

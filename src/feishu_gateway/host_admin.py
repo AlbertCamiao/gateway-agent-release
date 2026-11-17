@@ -35,10 +35,16 @@ from pathlib import Path
 home = Path.home()
 workspace = home / "workspace"
 bridge = home / ".dsh" / "gateway-bridge"
+codex = shutil.which("codex")
+if codex is None:
+    for candidate in (home / ".local" / "bin" / "codex", home / "bin" / "codex"):
+        if candidate.is_file():
+            codex = str(candidate)
+            break
 print(json.dumps({
     "home": str(home),
     "workspace": str(workspace) if workspace.is_dir() else None,
-    "codex": shutil.which("codex"),
+    "codex": codex,
     "bridge": str(bridge),
     "bridge_exists": bridge.is_dir(),
     "token": (bridge / "bridge-token").is_file(),
