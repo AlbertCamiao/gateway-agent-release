@@ -231,14 +231,14 @@ intent detection, target selection, and prompt formatting in one model call:
 ```text
 Stage A: IntentPlanner
   request + operation catalog + focus
-  → operation only
+  → operation + task body with routing/session-selection phrases removed
 
 Stage B: TargetSelector
   request + already-chosen operation + authorized candidates + focus
   → exactly one candidate
 
 Stage C: PromptFormatter
-  chosen target + original request + template
+  chosen target + cleaned task body + template
   → promptMarkdown
 ```
 

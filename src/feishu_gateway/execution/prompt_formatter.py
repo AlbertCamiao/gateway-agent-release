@@ -26,8 +26,11 @@ class PromptFormatter:
             raise PortError("upstream_error", "prompt template is empty")
         instructions = (
             "Format the already selected task into Markdown using the template. "
-            "Do not choose or change the session. Do not execute anything. "
-            "Keep the required Chinese section headings and return only the promptMarkdown field."
+            "The task text has already been stripped of destination-selection and "
+            "routing metadata by Gateway; never add host, session, workspace, or "
+            "routing instructions to the prompt. Do not choose or change the session. "
+            "Do not execute anything. Keep the required Chinese section headings and "
+            "return only the promptMarkdown field."
         )
         payload = json.dumps({
             "target": {"host": target.host, "runtime": target.runtime,
